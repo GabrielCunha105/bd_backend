@@ -1,3 +1,6 @@
 # Dados brutos em csv
 parser/dados/rotten_tomatoes_critic_reviews.csv
 parser/dados/rotten_tomatoes_movies.csv
+
+# Configurações do VS Code
+.vscode

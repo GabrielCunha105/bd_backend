@@ -19,7 +19,7 @@ if ($conn->connect_error) {
   die("Conexão falhou: " . $conn->connect_error);
 }
 
-if($_GET and boolVal($_GET["teste"])) {
+if($_GET and isset($_GET["teste"]) and boolVal($_GET["teste"])) {
   echo("Conexão bem sucedida.");
 }
 
