@@ -3,12 +3,16 @@
   include("connect.php");
   include("./parser/parser.php");
 
+  // Lê os dados das tabelas csv
   $tables = getTables();
 
   migrateTables();
 
   echo("Banco de dados migrado com sucesso.");
 
+  /**
+   * Migra as tabelas no banco de dados
+   */
   function migrateTables() {
     migrateTomatometers();
     migrateCompanies();
@@ -20,6 +24,9 @@
     migrateReviews();
   }
 
+  /**
+   * Migra a tabela tomatometer no Banco de dados
+   */
   function migrateTomatometers(){
 
     global $tables;
@@ -47,6 +54,9 @@
     $tables->tomatometers = null;
   }
 
+  /**
+   * Migra a tabela Produtoras no Banco de dados
+   */
   function migrateCompanies(){
 
     global $tables;
@@ -73,6 +83,9 @@
     $tables->companies = null;
   }
 
+  /**
+   * Migra a tabela Filme no Banco de dados
+   */
   function migrateMovies() {
 
     global $tables;
@@ -104,6 +117,9 @@
     $tables->movies = null;
   }
 
+  /**
+   * Migra a tabela Genero no Banco de dados
+   */
   function migrateGenres() {
 
     global $tables;
@@ -128,6 +144,9 @@
     $tables->genres = null;
   }
 
+  /**
+   * Migra a tabela Possui no Banco de dados
+   */
   function migrateHas() {
 
     global $tables;
@@ -153,6 +172,9 @@
     $tables->has = null;
   }
 
+  /**
+   * Migra a tabela Diretor no Banco de dados
+   */
   function migrateDirectors() {
 
     global $tables;
@@ -178,6 +200,9 @@
     $tables->directors = null;
   }
 
+  /**
+   * Migra a tabela Critico no Banco de dados
+   */
   function migrateCritics() {
 
     global $tables;
@@ -204,6 +229,9 @@
     $tables->critics = null;
   }
 
+  /**
+   * Migra a tabela Review no Banco de dados
+   */
   function migrateReviews() {
 
     global $tables;
@@ -220,6 +248,9 @@
         $review->fk_Critico_critic_id, $review->fk_Filme_rotten_tomatoes_link );
         
       $i++;
+
+      // Quebra a query de inserção em querys menores devido ao grade volume de
+      // dados das reviews
       if ($i % 100000 == 0) {
         $reviews_query[strlen($reviews_query)-1]= ";";
       

@@ -1,23 +1,32 @@
 <?php
 
+/** Lista de países */
 $country_list = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Anguilla", "Antigua &amp; Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia &amp; Herzegovina", "Botswana", "Brazil", "British Virgin Islands", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Cape Verde", "Cayman Islands", "Chad", "Chile", "China", "Colombia", "Congo", "Cook Islands", "Costa Rica", "Cote D Ivoire", "Croatia", "Cruise Ship", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Estonia", "Ethiopia", "Falkland Islands", "Faroe Islands", "Fiji", "Finland", "France", "French Polynesia", "French West Indies", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kuwait", "Kyrgyz Republic", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Mauritania", "Mauritius", "Mexico", "Moldova", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Namibia", "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Norway", "Oman", "Pakistan", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russia", "Rwanda", "Saint Pierre &amp; Miquelon", "Samoa", "San Marino", "Satellite", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "South Africa", "South Korea", "Spain", "Sri Lanka", "St Kitts &amp; Nevis", "St Lucia", "St Vincent", "St. Lucia", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor L'Este", "Togo", "Tonga", "Trinidad &amp; Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks &amp; Caicos", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "Uruguay", "Uzbekistan", "Venezuela", "Vietnam", "Virgin Islands (US)", "Yemen", "Zambia", "Zimbabwe"];
 
+/** IDs de filmes que possuem reviews mas não estão registrados como filmes */
 $ghost_movies = ["m/-_man", "m/-cule_valley_of_the_lost_ants",
   "m/patton_oswalt_tragedy_+_comedy_equals_time", "m/+_one_2019", "m/+h", 
   "m/sympathy-for-the-devil-one-+-one"];
 
+/**
+ * Retorna um objeto contendo os dados estruturados a serem inseridos no banco
+ * de dados. Os dados são lidos dos arquivos csv que devem estar na pasta "dados"
+ */
 function getTables()
 {
   // Abre os arquivos CSV
   $reviews_handle = fopen("./parser/dados/rotten_tomatoes_critic_reviews.csv", "r");
   $movies_handle = fopen("./parser/dados/rotten_tomatoes_movies.csv", "r");
 
+  // Retona erro se não conseguir ler o arquivo
   if (!($reviews_handle && $movies_handle)) {
     exit("Erro ao ler arquivos csv.");
   }
 
+  // Aumenta o limite de memória utilizada pelo programa
   ini_set('memory_limit', '2048M');
 
+  // Faz o parsing nos dados no arquivo rotten_tomatoes_movies.csv
   $tables = new \stdClass();
   $out = parseMoviesCSV($movies_handle);
   $tables->movies = $out->movies;
@@ -29,6 +38,7 @@ function getTables()
 
   fclose($movies_handle);
 
+  // Faz o parsing nos dados no arquivo rotten_tomatoes_critic_reviews.csv
   $out = parseReviewsCSV($reviews_handle);
   $tables->reviews = $out->reviews;
   $tables->critics = $out->critics;
@@ -38,6 +48,11 @@ function getTables()
   return $tables;
 }
 
+/**
+ * Lê e faz o parsing nos dados no arquivo rotten_tomatoes_movies.csv e retorna
+ * um objeto contendo as tabelas Filmes, tomatometers, Diretores, Possui, Generos
+ * e Produtoras
+ */
 function parseMoviesCSV($handle)
 {
 
@@ -54,7 +69,10 @@ function parseMoviesCSV($handle)
   $genres = [];
   $companies = [];
 
+  // Itera por todos os registros do CSV
   while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
+
+    // Cria um Filme
     $movies[$count] = new \stdClass();
     $movies[$count]->rotten_tomatoes_link = $data[0];
     $movies[$count]->title = $data[1];
@@ -66,17 +84,20 @@ function parseMoviesCSV($handle)
     $movies[$count]->fk_tomatometer_tomatometer_PK = $count + 1;
     $movies[$count]->fk_Produtora_name = $data[12];
 
+    // Cria uma produtora
     $companies[$count] = str_replace("ä", "a", $data[12]);
 
+    // Cria um tomatometro para o filme
     $tomatometers[$count] = new \stdClass();
     $tomatometers[$count]->tomatometer_PK = $count + 1;
     $tomatometers[$count]->status = $data[13];
     $tomatometers[$count]->rating = $data[14];
     $tomatometers[$count]->tomatometer_count = $data[15];
 
-
     $directors_arr = str_getcsv($data[6]);
     foreach ($directors_arr as $director) {
+
+      //Cria um diretor
       $directors[$directors_count] = new \stdClass();
       $directors[$directors_count]->fk_Filme_rotten_tomatoes_link = $data[0];
       $directors[$directors_count]->name = trim($director);
@@ -86,8 +107,11 @@ function parseMoviesCSV($handle)
     $genres_arr = str_getcsv($data[5]);
     $genre_movie = 1;
     foreach ($genres_arr as $genre) {
+
+      // Cria um Genero
       $genres[$genres_count] = trim($genre);
 
+      // Cria uma entrada na table  Possui
       $has[$genres_count] = new \stdClass();
       $has[$genres_count]->fk_Genero_name = trim($genre);
       $has[$genres_count]->fk_Filme_rotten_tomatoes_link = $data[0];
@@ -100,6 +124,7 @@ function parseMoviesCSV($handle)
     $count++;
   }
 
+  // Retorna as tabelas criadas
   $out = new \stdClass();
   $out->movies = $movies;
   $out->tomatometers = $tomatometers;
@@ -111,9 +136,14 @@ function parseMoviesCSV($handle)
   return $out;
 }
 
+/**
+ * Lê e faz o parsing nos dados no arquivo rotten_tomatoes_critic_reviews.csv e retorna
+ * um objeto contendo as tabelas Reviews e Criticos.
+ */
 function parseReviewsCSV($handle)
 {
   global $ghost_movies;
+
   // Descarta a primeira linha
   fgetcsv($handle, 0, ",");
 
@@ -121,12 +151,15 @@ function parseReviewsCSV($handle)
   $critics = [];
   $count = 0;
 
+  // Itera por todos os registros do CSV
   while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
 
+    // Ignora os filmes fantasma
     if (in_array($data[0], $ghost_movies)) {
       continue;
     }
 
+    // Cria uma review
     $reviews[$count] = new \stdClass();
     $reviews[$count]->review_id = $count + 1;
     $reviews[$count]->type = $data[4];
@@ -136,6 +169,7 @@ function parseReviewsCSV($handle)
     $reviews[$count]->fk_Critico_critic_id = $count + 1;
     $reviews[$count]->fk_Filme_rotten_tomatoes_link = $data[0];
 
+    // Cria um crítico
     $critics[$count] = new \stdClass();
     $critics[$count]->critic_id = $count + 1;
     $critics[$count]->name = $data[1];
@@ -145,6 +179,7 @@ function parseReviewsCSV($handle)
     $count++;
   }
 
+  // Retorna as tabelas criadas
   $out = new \stdClass();
   $out->reviews = $reviews;
   $out->critics = $critics;
@@ -152,6 +187,10 @@ function parseReviewsCSV($handle)
   return $out;
 }
 
+/**
+ * Gera dados aleatórios para as produtoras para atender às especificações
+ * mínimas do trabalho final
+ */
 function seedCompanies($names)
 {
   global $country_list;

@@ -2,11 +2,13 @@
   include("connect.php");
   header('Content-Type: application/json; charset=utf-8');
   
+  // Retorna erro se o número da query não foi especificado
   if(!($_GET and isset($_GET["route"]))) {
     http_response_code(422);
     die(json_encode((object)["erro" => "rota não especificada"]));
   }
 
+  // Identifica a rota que precisa ser executada
   switch($_GET["route"]) {
 
     case "1":
@@ -116,17 +118,19 @@
 
     default:
       http_response_code(422);
-      die(json_encode((object)["erro" => "rota inexistente"]));
+      die(json_encode((object)["erro" => "query inexistente"]));
 
   }
 
   $result = $conn->query($query);
 
+  // Retorna erro se a query falhar
   if (!$result) {
     http_response_code(500);
     die(json_encode((object)["erro" => "Erro ao realizar consulta no banco de dados"]));
   }
 
+  // Retorna o resultado da query
   echo(json_encode($result->fetch_all(MYSQLI_ASSOC)));
 
 ?>
