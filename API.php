@@ -1,6 +1,7 @@
 <?php
   include("connect.php");
   header('Content-Type: application/json; charset=utf-8');
+  header('Access-Control-Allow-Origin: *;');
   
   // Retorna erro se o número da query não foi especificado
   if(!($_GET and isset($_GET["route"]))) {
