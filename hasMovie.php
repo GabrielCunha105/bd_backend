@@ -9,7 +9,8 @@
     die(json_encode((object)["erro" => "filme não especificado"]));
   }
 
-  $query = "SELECT title FROM Filme WHERE title = " . $_GET["movie_title"];
+  $query = "SELECT title FROM Filme WHERE title LIKE '%"
+    . $_GET["movie_title"] . "%'";
 
   $result = $conn->query($query);
 
