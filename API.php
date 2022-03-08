@@ -88,7 +88,8 @@
       $query = "
       SELECT YEAR(release_date) as release_year, count(*)
       FROM Filme 
-      GROUP BY release_year 
+      WHERE release_date IS NOT NULL
+      GROUP BY release_year
       ORDER BY release_year DESC;";
       break;
 
